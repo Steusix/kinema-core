@@ -70,7 +70,6 @@ int main() {
     double omega1 = 0.0;
     double omega2 = 0.0;
 
-    // Tryb strojenia PID: false = tłumienie krytyczne (bez przeregulowania), true = niedotłumiony (widoczny overshoot)
     bool underdampedMode = false;
     double dampingFactor = 0.935;
     kinema::PidController pid1(42.0, 5.0, 13.5);
@@ -82,13 +81,11 @@ int main() {
     std::vector<Vector2> trail;
     constexpr size_t maxTrailPoints = 140;
 
-    // Bufor historii błędu pozycji [mm] do rysowania oscyloskopu w czasie rzeczywistym (3 sekundy przy 60 FPS)
     std::deque<float> errorHistory(180, 0.0f);
     float peakOvershootMm = 0.0f;
     bool passedTargetOnce = false;
     double prevSignedProj = 0.0;
 
-    // Elementy panelu bocznego
     const float panelX = static_cast<float>(canvasWidth + 24);
     char initX[32], initY[32];
     std::snprintf(initX, sizeof(initX), "%.3f", targetMeters.x());
@@ -104,12 +101,10 @@ int main() {
     auto applyPidPreset = [&](bool underdamped) {
         underdampedMode = underdamped;
         if (underdampedMode) {
-            // Układ niedotłumiony: agresywne Kp i Ki, słabszy hamulec Kd -> wyraźny overshoot na wykresie
             pid1 = kinema::PidController(65.0, 18.0, 6.5);
             pid2 = kinema::PidController(75.0, 20.0, 7.5);
             dampingFactor = 0.955;
         } else {
-            // Tłumienie krytyczne: szybki dojazd i "wklejenie" w punkt bez cofania
             pid1 = kinema::PidController(42.0, 5.0, 13.5);
             pid2 = kinema::PidController(52.0, 6.0, 15.0);
             dampingFactor = 0.935;
@@ -203,7 +198,6 @@ int main() {
             }
         }
 
-        // Obliczenia IK + PID + Fizyka + FK
         Eigen::Vector2d clampedTarget = arm.clampToWorkspace(targetMeters);
         const bool isClamped = (targetMeters - clampedTarget).norm() > 1e-4;
 
@@ -220,7 +214,6 @@ int main() {
         kinema::ArmState currentState = arm.forward(currentAngles);
         kinema::ArmState ghostState = arm.forward(targetAngles);
 
-        // Pomiar błędu pozycji i wykrywanie przeregulowania (overshoot)
         const double posErrMm = (clampedTarget - currentState.endEffector).norm() * 1000.0;
         const double angleErrSum = (targetAngles.theta1 - currentAngles.theta1) + (targetAngles.theta2 - currentAngles.theta2);
         if (prevSignedProj != 0.0 && (angleErrSum * prevSignedProj < 0.0)) {
@@ -244,7 +237,6 @@ int main() {
             trail.erase(trail.begin());
         }
 
-        // ================= RYSOWANIE =================
         BeginDrawing();
         ClearBackground(Color{ 20, 22, 28, 255 });
 
@@ -277,7 +269,6 @@ int main() {
         }
         DrawCircleLinesV(targetPx, 10.0f, YELLOW);
 
-        // ================= PANEL BOCZNY (INSPECTOR) =================
         DrawRectangle(canvasWidth, 0, panelWidth, screenHeight, Color{ 28, 31, 40, 255 });
         DrawLine(canvasWidth, 0, canvasWidth, screenHeight, Color{ 55, 62, 78, 255 });
 
@@ -357,18 +348,15 @@ int main() {
         drawSection("4. PID STEP RESPONSE & ERROR", bufErr, posErrMm < 1.0 ? GREEN : YELLOW);
         yCursor += 76;
 
-        // ================= OSCYLOSKOP BŁĘDU W CZASIE =================
         const Rectangle graphBox{ panelX, static_cast<float>(yCursor), 320.0f, 155.0f };
         DrawRectangleRec(graphBox, Color{ 18, 20, 26, 255 });
         DrawRectangleLinesEx(graphBox, 1.5f, Color{ 55, 62, 78, 255 });
 
-        // Skalowanie osi Y (auto-skala minimum 50 mm, rośnie gdy duży skok)
         float maxScaleMm = 50.0f;
         for (float val : errorHistory) {
             if (val > maxScaleMm) maxScaleMm = val * 1.15f;
         }
 
-        // Linie pomocnicze wykresu (połowa skali i oś 0 mm)
         const float zeroY = graphBox.y + graphBox.height - 14.0f;
         const float usableH = graphBox.height - 28.0f;
         DrawLineV({ graphBox.x, zeroY }, { graphBox.x + graphBox.width, zeroY }, Fade(GREEN, 0.4f));
@@ -379,7 +367,6 @@ int main() {
         DrawText(scaleLabel, static_cast<int>(graphBox.x + 6), static_cast<int>(graphBox.y + 4), 12, GRAY);
         DrawText("0 mm (target)", static_cast<int>(graphBox.x + 6), static_cast<int>(zeroY - 14), 12, Fade(GREEN, 0.7f));
 
-        // Krzywa błędu pozycji w czasie (3 sekundy)
         const float stepX = graphBox.width / static_cast<float>(errorHistory.size() - 1);
         for (size_t i = 1; i < errorHistory.size(); ++i) {
             float y1 = zeroY - std::min(errorHistory[i - 1] / maxScaleMm, 1.0f) * usableH;

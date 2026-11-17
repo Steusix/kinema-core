@@ -8,8 +8,8 @@
 namespace kinema {
 
 struct JointAngles {
-    double theta1{0.0}; // Kąt pierwszego przegubu (bark) [rad]
-    double theta2{0.0}; // Kąt drugiego przegubu (łokieć względem ogniwa 1) [rad]
+    double theta1{0.0};
+    double theta2{0.0}; 
 };
 
 struct ArmState {
@@ -23,7 +23,6 @@ public:
     PlanarArmKinematics(double link1Length, double link2Length)
         : l1_(link1Length), l2_(link2Length) {}
 
-    // Kinematyka prosta (FK): kąty -> pozycje w przestrzeni 2D
     [[nodiscard]] ArmState forward(const JointAngles& angles) const {
         ArmState state;
         state.elbow.x() = l1_ * std::cos(angles.theta1);
@@ -36,8 +35,6 @@ public:
         return state;
     }
 
-    // Kinematyka odwrotna (IK): punkt (x, y) -> kąty przegubów
-    // Jeśli cel jest poza zasięgiem, automatycznie rzutuje go na granicę przestrzeni roboczej
     [[nodiscard]] JointAngles inverse(const Eigen::Vector2d& target, bool elbowUp = false) const {
         Eigen::Vector2d clampedTarget = clampToWorkspace(target);
         const double x = clampedTarget.x();
@@ -59,7 +56,6 @@ public:
         return JointAngles{theta1, theta2};
     }
 
-    // Rzutowanie punktu na osiągalny pierścień [|L1 - L2|, L1 + L2]
     [[nodiscard]] Eigen::Vector2d clampToWorkspace(const Eigen::Vector2d& target) const {
         const double dist = target.norm();
         const double maxReach = l1_ + l2_;
