@@ -25,9 +25,8 @@ FetchContent_MakeAvailable(eigen)
 
 FetchContent_Declare(
     raylib
-    GIT_REPOSITORY https://github.com/raysan5/raylib.git
-    GIT_TAG 5.0
-    GIT_SHALLOW TRUE
+    URL https://github.com/raysan5/raylib/archive/refs/tags/5.5.zip
+    DOWNLOAD_EXTRACT_TIMESTAMP TRUE
 )
 set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(raylib)
@@ -46,7 +45,7 @@ add_executable(arm_sim
 # ==========================================
 # BLOK 4: Podpinanie nagłówków (.hpp) i bibliotek
 # ==========================================
-target_include_directories(arm_sim PRIVATE include)
+target_include_directories(arm_sim PRIVATE include ${raylib_SOURCE_DIR}/src)
 
 # Linkujemy (sklejamy) nasz program z pobranymi wyżej bibliotekami
 target_link_libraries(arm_sim PRIVATE Eigen3::Eigen raylib)

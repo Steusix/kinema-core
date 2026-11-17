@@ -2,6 +2,7 @@
 build/
 out/
 cmake-build-*/
+build_clean/
 
 # Pliki skompilowane i obiektowe C/C++
 *.o
