@@ -8,7 +8,7 @@ A real-time **C++20** physics and control simulator for a 2-Degree-of-Freedom (2
 
 ## Key Features
 
-- **Analytical Inverse Kinematics (IK):** Real-time calculation of target joint angles $(\theta_1, \theta_2)$ for any Cartesian target $(x, y)$, featuring annular workspace clamping ($\vert{}L_1 - L_2\vert{} \le r \le L_1 + L_2$), numerical singularity stabilization at full extension/retraction, and live **Elbow-Down / Elbow-Up** branch switching.
+- **Analytical Inverse Kinematics (IK):** Real-time calculation of target joint angles ($\theta_1, \theta_2$) for any Cartesian target $(x, y)$, featuring annular workspace clamping ($\vert{}L_1 - L_2\vert{} \le r \le L_1 + L_2$), numerical singularity stabilization at full extension/retraction, and live **Elbow-Down / Elbow-Up** branch switching.
 - **Joint-Space PID Control & Damping Regimes:** Independent discrete-time PID controllers with integral anti-windup driving each joint under simulated angular inertia and viscous damping. Includes a live toggle between **Critically Damped** (fast convergence without overshoot) and **Underdamped** presets to study transient overshoot and settling behavior.
 - **Laboratory Control & Telemetry Inspector:**
   - **Dual Target Input:** Interactive left-click selection on the workspace grid or exact numeric coordinate entry (`Target X [m]`, `Target Y [m]`) with `ENTER` confirmation.
@@ -24,14 +24,17 @@ A real-time **C++20** physics and control simulator for a 2-Degree-of-Freedom (2
 Given link lengths $L_1, L_2$ and joint angles $\theta_1, \theta_2$:
 
 $$x = L_1 \cos(\theta_1) + L_2 \cos(\theta_1 + \theta_2)$$
+
 $$y = L_1 \sin(\theta_1) + L_2 \sin(\theta_1 + \theta_2)$$
 
 ### Inverse Kinematics (Elbow-Down / Elbow-Up)
 For a target position $(x, y)$ clamped to the reachable annulus $\vert{}L_1 - L_2\vert{} \le r \le L_1 + L_2$:
 
 $$\cos(\theta_2) = \frac{x^2 + y^2 - L_1^2 - L_2^2}{2 L_1 L_2}$$
-$$\theta_2 = \operatorname{atan2}\left(\pm\sqrt{1 - \cos^2(\theta_2)}, \, \cos(\theta_2)\right)$$
-$$\theta_1 = \operatorname{atan2}(y, x) - \operatorname{atan2}\left(L_2 \sin(\theta_2), \, L_1 + L_2 \cos(\theta_2)\right)$$
+
+$$\theta_2 = \text{atan2}\left(\pm\sqrt{1 - \cos^2(\theta_2)}, \, \cos(\theta_2)\right)$$
+
+$$\theta_1 = \text{atan2}(y, x) - \text{atan2}\left(L_2 \sin(\theta_2), \, L_1 + L_2 \cos(\theta_2)\right)$$
 
 ### Decoupled Joint PID Control
 Each joint tracks its target angle $\theta_i^*$ using discrete-time PID control with anti-windup clamping:
@@ -68,3 +71,26 @@ planar-arm-ik-pid/
 ├── CMakeLists.txt                      # CMake build configuration (Eigen3 + Raylib)
 ├── .gitignore
 └── README.md
+```
+
+---
+
+## Build & Run
+
+### Prerequisites
+- C++20 compatible compiler (`GCC 11+`, `Clang 14+`, or `MSVC`)
+- `CMake 3.16+` (automatically fetches `Eigen3` and `Raylib` archive packages via `FetchContent`)
+
+### Compilation (Windows / MinGW)
+```bash
+cmake -B build -G "MinGW Makefiles"
+cmake --build build --config Release
+./build/arm_sim.exe
+```
+
+### Compilation (Linux / macOS)
+```bash
+cmake -B build
+cmake --build build --config Release
+./build/arm_sim
+```
