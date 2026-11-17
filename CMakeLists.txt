@@ -37,8 +37,6 @@ FetchContent_MakeAvailable(raylib)
 # ==========================================
 add_executable(arm_sim
     src/main.cpp
-    src/Kinematics.cpp
-    src/PIDController.cpp
 )
 
 
