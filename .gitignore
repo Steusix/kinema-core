@@ -1,0 +1,23 @@
+# Foldery budowania CMake (tu siedzą pobrane biblioteki i pliki .exe)
+build/
+out/
+cmake-build-*/
+
+# Pliki skompilowane i obiektowe C/C++
+*.o
+*.obj
+*.exe
+*.out
+*.app
+*.dll
+*.so
+*.dylib
+
+# Ustawienia lokalne IDE (VS Code / CLion)
+.vscode/
+.idea/
+*.user
+
+# Pliki systemowe
+.DS_Store
+Thumbs.db
